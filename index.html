@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Summarisation: Your Instant Information Digest</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* New Brand Colours from the uploaded image, with pink changed to red */
+        :root {
+            --color-red: #E74C3C; /* Vibrant Red */
+            --color-light-grey: #9FA8AA; /* Light Grey */
+            --color-dark-blue: #50566A; /* Dark Blue */
+            --color-teal: #4A8E9A; /* Teal */
+            --color-reddish-orange: #E37375; /* Reddish-Orange */
+            --color-off-white: #F2F2F2; /* Off-White for content background */
+            --color-white: #FFFFFF; /* Pure white for card background */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-dark-blue); 
+            color: var(--color-white); /* Light text on dark background */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem; /* Increased padding for better spacing */
+        }
+
+        /* Styling for buttons */
+        #roll-button, #restart-button {
+            background-color: var(--color-red); /* Red for primary button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        #roll-button:hover, #restart-button:hover {
+            background-color: var(--color-teal); /* Teal for hover effect */
+            transform: translateY(-3px); /* More pronounced lift effect on hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+        }
+
+        /* Keyframe animations for content transitions */
+        @keyframes slide-out-up {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-100%); opacity: 0; }
+        }
+
+        @keyframes slide-in-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Pulse background for the content container */
+        @keyframes pulse-bg {
+            0% { background-color: var(--color-off-white); }
+            50% { background-color: var(--color-light-grey); } /* Light grey for pulse */
+            100% { background-color: var(--color-off-white); }
+        }
+
+        .animate-slide-out-up {
+            animation: slide-out-up 0.5s forwards;
+        }
+
+        .animate-slide-in-up {
+            animation: slide-in-up 0.5s forwards;
+        }
+
+        .pulse-background {
+            animation: pulse-bg 1s;
+        }
+
+        /* Custom list styling for tasks/solutions */
+        .solution-list {
+            list-style: none; /* Remove default bullet */
+            padding-left: 0;
+            text-align: left;
+            width: 100%; /* Ensure list takes full width */
+            margin-top: 10px; /* Space above the list */
+        }
+
+        .solution-list li {
+            position: relative;
+            padding-left: 30px; /* More space for custom bullet */
+            margin-bottom: 10px; /* More vertical spacing between list items */
+            color: var(--color-dark-blue); /* Dark blue text for list items */
+            line-height: 1.6; /* Improved line height for readability */
+            font-size: 0.95rem; /* Slightly smaller font for list items */
+        }
+
+        .solution-list li::before {
+            content: '•'; /* Custom bullet point */
+            position: absolute;
+            left: 0;
+            top: 0; /* Align bullet to the top of the text */
+            color: var(--color-reddish-orange); /* Reddish-orange accent for bullet */
+            font-weight: bold;
+            font-size: 1.5em; /* Larger bullet point */
+            line-height: 1; /* Align bullet vertically */
+        }
+
+        /* Specific styling for problem/solution text within content */
+        .problem-text {
+            font-weight: 700; /* Bold */
+            color: var(--color-dark-blue); /* Dark blue for "Problem" */
+            display: block; /* Ensures it takes full width */
+            margin-bottom: 8px; /* Space below problem text */
+            font-size: 1.05rem; /* Slightly larger font */
+        }
+
+        .solution-heading {
+            font-weight: 700; /* Bold */
+            color: var(--color-teal); /* Teal for "AI Solution" heading */
+            margin-top: 15px; /* More space above solution heading */
+            margin-bottom: 8px; /* Space below solution heading */
+            font-size: 1.05rem; /* Slightly larger font */
+        }
+
+        /* Main container styling */
+        .main-container {
+            background-color: var(--color-white); /* White background for the card */
+            border-color: var(--color-light-grey); /* Light grey border */
+            color: var(--color-dark-blue); /* Dark blue text inside the card */
+            max-width: 700px; /* Slightly narrower for better line length */
+            padding: 2.5rem; /* Increased padding inside the card */
+        }
+
+        /* Progress tracker text */
+        .progress-text {
+            color: var(--color-dark-blue); /* Dark blue for progress text */
+            font-size: 0.9rem; /* Slightly smaller for subtlety */
+            margin-bottom: 1rem; /* More space below progress */
+        }
+
+        /* Tube container background and border */
+        .tube-background {
+            background-color: var(--color-off-white); /* Off-white for tube background */
+            border-color: var(--color-light-grey); /* Light grey border for tube */
+            height: 450px; /* Increased height for more content visibility */
+            padding: 1.5rem; /* Increased padding inside the tube */
+        }
+
+        /* Content display area */
+        #content-display {
+            padding: 0; /* Remove default padding here as it's handled by newContent */
+            line-height: 1.7; /* General line height for paragraphs */
+            font-size: 1rem; /* Base font size for paragraphs */
+        }
+
+        #content-display p {
+            margin-bottom: 15px; /* Spacing between paragraphs */
+        }
+
+        #content-display h2 {
+            font-size: 1.8rem; /* Size for context titles */
+            margin-bottom: 1rem; /* Space below context title */
+        }
+
+        /* Scrollbar styling for content display */
+        #content-display {
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--color-light-grey) transparent; /* Firefox */
+        }
+
+        #content-display::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #content-display::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #content-display::-webkit-scrollbar-thumb {
+            background-color: var(--color-light-grey);
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .main-container {
+                padding: 1.5rem;
+            }
+            #tube-container {
+                height: 400px; /* Adjust height for smaller screens */
+            }
+            #content-display h2 {
+                font-size: 1.5rem;
+            }
+            .solution-list li {
+                font-size: 0.9rem;
+                padding-left: 25px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="main-container p-6 rounded-2xl shadow-xl w-full border-2">
+        <!-- Main heading removed -->
+
+        <!-- Progress Tracker -->
+        <div id="progress" class="progress-text text-center mb-2 font-medium"></div>
+
+        <!-- Tube Container (Display Area) -->
+        <div id="tube-container" class="tube-background relative overflow-hidden rounded-xl border-2 flex items-center justify-center">
+            <div id="content-display" class="absolute w-full h-full flex flex-col justify-start items-start text-left px-6 py-4"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-8 flex flex-col gap-4">
+            <button id="roll-button" class="py-3 rounded-xl text-white font-semibold">Next Context</button>
+            <button id="restart-button" class="py-3 rounded-xl text-white font-semibold hidden">Start Over</button>
+        </div>
+    </div>
+
+    <script>
+        // Content for the rolling activity
+        const summaryContexts = [
+            {
+                title: "Introduction: AI & Summaries",
+                content: `
+                    <p>One of the most powerful and immediate ways Generative AI can help you is by <strong>summarising information</strong>. Instead of spending valuable time reading through lengthy documents, articles, or conversations, AI can quickly extract the most crucial points, giving you a concise overview. This helps you grasp core concepts faster and make informed decisions more efficiently.</p>
+                    <p>AI models are trained on vast amounts of text, allowing them to identify key sentences, themes, and arguments. When you ask for a summary, the AI doesn't just cut text; it understands the content and generates a coherent, condensed version, often in its own words.</p>
+                    <p class="solution-heading">Click "Next Context" to explore specific applications!</p>
+                `
+            },
+            {
+                title: "1. Academic & Research",
+                content: `
+                    <p><span class="problem-text">Problem:</span> Drowning in research papers, textbooks, and lecture notes.</p>
+                    <p class="solution-heading">AI Solution:</p>
+                    <ul class="solution-list">
+                        <li><strong>Research Paper Summaries:</strong> Quickly get the abstract, methodology, results, and conclusions of a scientific article without reading all the dense prose.</li>
+                        <li><strong>Textbook Chapter Overviews:</strong> Understand the main concepts of a chapter before diving into detailed reading or for quick revision.</li>
+                        <li><strong>Lecture Note Consolidation:</strong> Turn extensive lecture transcripts into bullet-point summaries of key takeaways.</li>
+                    </ul>
+                `
+            },
+            {
+                title: "2. Business & Professional",
+                content: `
+                    <p><span class="problem-text">Problem:</span> Overwhelmed by long reports, meeting minutes, emails, and client communications.</p>
+                    <p class="solution-heading">AI Solution:</p>
+                    <ul class="solution-list">
+                        <li><strong>Meeting Recaps:</strong> Generate concise summaries of discussions, decisions made, and action items from lengthy meeting transcripts.</li>
+                        <li><strong>Market Research Digests:</strong> Condense vast amounts of market data or competitor <strong>analysis</strong> into actionable insights.</li>
+                        <li><strong>Email Thread Compression:</strong> Quickly understand the core points of long email chains, saving time on back-and-forth reading.</li>
+                        <li><strong>Legal Document Highlights:</strong> Extract critical clauses, dates, and responsibilities from contracts or legal briefs.</li>
+                    </ul>
+                `
+            },
+            {
+                title: "3. Everyday Information Consumption",
+                content: `
+                    <p><span class="problem-text">Problem:</span> Too much information to consume online – news articles, blogs, social media feeds.</p>
+                    <p class="solution-heading">AI Solution:</p>
+                    <ul class="solution-list">
+                        <li><strong>News Article Summaries:</strong> Get the gist of a news story quickly, allowing you to stay informed without reading every word.</li>
+                        <li><strong>Blog Post Overviews:</strong> Determine if a long blog post is relevant to your interests before committing to reading it entirely.</li>
+                        <li><strong>Product Review Synopses:</strong> Understand the common pros and cons from many customer reviews for a product.</li>
+                    </ul>
+                `
+            }
+        ];
+
+        const contentDisplay = document.getElementById('content-display');
+        const rollButton = document.getElementById('roll-button');
+        const restartButton = document.getElementById('restart-button');
+        const progressDisplay = document.getElementById('progress');
+
+        let currentIndex = 0;
+
+        /**
+         * Updates the progress display text based on the current section.
+         */
+        function updateProgress() {
+            if (currentIndex === 0) {
+                progressDisplay.textContent = `Introduction`;
+            } else {
+                progressDisplay.textContent = `Context ${currentIndex} of ${summaryContexts.length -1}`;
+            }
+        }
+
+        /**
+         * Displays the content for the given section index with animation.
+         * @param {number} index The index of the section in the summaryContexts array to display.
+         */
+        function showContent(index) {
+            const sectionData = summaryContexts[index];
+
+            const newContent = document.createElement('div');
+            newContent.className = 'absolute w-full h-full flex flex-col justify-start items-start text-left px-6 py-4 animate-slide-in-up overflow-y-auto';
+            newContent.innerHTML = `
+                <h2 class="text-2xl font-semibold mb-3 text-[var(--color-dark-blue)]">${sectionData.title}</h2>
+                ${sectionData.content}
+            `;
+            
+            const oldContent = contentDisplay.firstElementChild;
+
+            if (oldContent) {
+                oldContent.classList.add('animate-slide-out-up');
+                const handleAnimationEnd = () => {
+                    oldContent.removeEventListener('animationend', handleAnimationEnd);
+                    if (contentDisplay.contains(oldContent)) {
+                        contentDisplay.removeChild(oldContent);
+                    }
+                    contentDisplay.appendChild(newContent);
+                    document.getElementById('tube-container').classList.add('pulse-background');
+                    setTimeout(() => {
+                        document.getElementById('tube-container').classList.remove('pulse-background');
+                    }, 1000);
+                };
+                oldContent.addEventListener('animationend', handleAnimationEnd);
+
+                // Fallback timeout in case animationend doesn't fire
+                setTimeout(() => {
+                    if (oldContent.classList.contains('animate-slide-out-up') && contentDisplay.contains(oldContent)) {
+                        oldContent.removeEventListener('animationend', handleAnimationEnd);
+                        contentDisplay.removeChild(oldContent);
+                        if (!contentDisplay.contains(newContent)) {
+                            contentDisplay.appendChild(newContent);
+                        }
+                        document.getElementById('tube-container').classList.add('pulse-background');
+                        setTimeout(() => {
+                            document.getElementById('tube-container').classList.remove('pulse-background');
+                        }, 1000);
+                    }
+                }, 600); // Slightly longer than animation duration
+            } else {
+                contentDisplay.appendChild(newContent);
+            }
+
+            updateProgress();
+        }
+
+        // Event listener for the "Next Section" button
+        rollButton.addEventListener('click', () => {
+            rollButton.disabled = true;
+
+            if (currentIndex < summaryContexts.length - 1) {
+                currentIndex++;
+                showContent(currentIndex);
+
+                setTimeout(() => {
+                    rollButton.disabled = false;
+                }, 1100); // Re-enable button after a delay that covers both animations
+
+                if (currentIndex === summaryContexts.length - 1) {
+                    rollButton.classList.add('hidden');
+                    restartButton.classList.remove('hidden');
+                }
+            } else {
+                rollButton.disabled = false;
+            }
+        });
+
+        // Event listener for the "Start Over" button
+        restartButton.addEventListener('click', () => {
+            currentIndex = 0;
+            showContent(currentIndex);
+            restartButton.classList.add('hidden');
+            rollButton.classList.remove('hidden');
+        });
+
+        // Initial load: display the first section when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            showContent(currentIndex);
+        });
+    </script>
+</body>
+</html>
