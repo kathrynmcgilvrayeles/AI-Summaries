@@ -30,17 +30,42 @@
             padding: 2rem; /* Increased padding for better spacing */
         }
 
-        /* Styling for buttons */
-        #roll-button, #restart-button {
-            background-color: var(--color-red); /* Red for primary button */
-            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        /* New wrapper for content and arrows */
+        .content-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem; /* Space between arrows and the main container */
+            width: 100%; /* Take full width to allow centering */
+            max-width: 900px; /* Max width for the entire layout */
         }
 
-        #roll-button:hover, #restart-button:hover {
+        /* Styling for navigation arrows */
+        .nav-arrow {
+            background-color: var(--color-red); /* Red for arrows */
+            border-radius: 50%; /* Circular buttons */
+            width: 50px; /* Fixed width */
+            height: 50px; /* Fixed height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            flex-shrink: 0; /* Prevent shrinking on small screens */
+            /* Removed absolute positioning as they are now flex items */
+        }
+
+        .nav-arrow:hover {
             background-color: var(--color-teal); /* Teal for hover effect */
-            transform: translateY(-3px); /* More pronounced lift effect on hover */
+            transform: scale(1.05); /* Slight scale up on hover */
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+        }
+
+        .nav-arrow svg {
+            fill: white; /* White arrow icon */
+            width: 24px;
+            height: 24px;
         }
 
         /* Keyframe animations for content transitions */
@@ -126,6 +151,7 @@
             color: var(--color-dark-blue); /* Dark blue text inside the card */
             max-width: 700px; /* Slightly narrower for better line length */
             padding: 2.5rem; /* Increased padding inside the card */
+            flex-grow: 1; /* Allow it to grow within the content-wrapper */
         }
 
         /* Progress tracker text */
@@ -184,6 +210,10 @@
             body {
                 padding: 1rem;
             }
+            .content-wrapper {
+                flex-direction: column; /* Stack content and arrows vertically */
+                gap: 1.5rem; /* Adjust gap for stacked layout */
+            }
             .main-container {
                 padding: 1.5rem;
             }
@@ -197,26 +227,45 @@
                 font-size: 0.9rem;
                 padding-left: 25px;
             }
+            /* Arrows will now be at the top/bottom of the stacked content */
+            .nav-arrow {
+                width: 45px; /* Slightly smaller arrows */
+                height: 45px;
+                /* Remove absolute positioning overrides for smaller screens */
+                position: static;
+                transform: none;
+            }
+            /* To make arrows appear at the bottom on small screens, we can add a wrapper */
+            .arrow-wrapper-mobile {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                padding: 0 1rem; /* Match body padding */
+            }
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
-    <div class="main-container p-6 rounded-2xl shadow-xl w-full border-2">
-        <!-- Main heading removed -->
+    <div class="content-wrapper">
+        <!-- Left Arrow -->
+        <button id="left-arrow" class="nav-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+        </button>
 
-        <!-- Progress Tracker -->
-        <div id="progress" class="progress-text text-center mb-2 font-medium"></div>
+        <div class="main-container p-6 rounded-2xl shadow-xl w-full border-2">
+            <!-- Progress Tracker -->
+            <div id="progress" class="progress-text text-center mb-2 font-medium"></div>
 
-        <!-- Tube Container (Display Area) -->
-        <div id="tube-container" class="tube-background relative overflow-hidden rounded-xl border-2 flex items-center justify-center">
-            <div id="content-display" class="absolute w-full h-full flex flex-col justify-start items-start text-left px-6 py-4"></div>
+            <!-- Tube Container (Display Area) -->
+            <div id="tube-container" class="tube-background relative overflow-hidden rounded-xl border-2 flex items-center justify-center">
+                <div id="content-display" class="absolute w-full h-full flex flex-col justify-start items-start text-left px-6 py-4"></div>
+            </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="mt-8 flex flex-col gap-4">
-            <button id="roll-button" class="py-3 rounded-xl text-white font-semibold">Next Context</button>
-            <button id="restart-button" class="py-3 rounded-xl text-white font-semibold hidden">Start Over</button>
-        </div>
+        <!-- Right Arrow -->
+        <button id="right-arrow" class="nav-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </button>
     </div>
 
     <script>
@@ -227,7 +276,7 @@
                 content: `
                     <p>One of the most powerful and immediate ways Generative AI can help you is by <strong>summarising information</strong>. Instead of spending valuable time reading through lengthy documents, articles, or conversations, AI can quickly extract the most crucial points, giving you a concise overview. This helps you grasp core concepts faster and make informed decisions more efficiently.</p>
                     <p>AI models are trained on vast amounts of text, allowing them to identify key sentences, themes, and arguments. When you ask for a summary, the AI doesn't just cut text; it understands the content and generates a coherent, condensed version, often in its own words.</p>
-                    <p class="solution-heading">Click "Next Context" to explore specific applications!</p>
+                    <p class="solution-heading">Click the right arrow to explore specific applications!</p>
                 `
             },
             {
@@ -270,8 +319,8 @@
         ];
 
         const contentDisplay = document.getElementById('content-display');
-        const rollButton = document.getElementById('roll-button');
-        const restartButton = document.getElementById('restart-button');
+        const leftArrowButton = document.getElementById('left-arrow');
+        const rightArrowButton = document.getElementById('right-arrow');
         const progressDisplay = document.getElementById('progress');
 
         let currentIndex = 0;
@@ -339,33 +388,34 @@
             updateProgress();
         }
 
-        // Event listener for the "Next Section" button
-        rollButton.addEventListener('click', () => {
-            rollButton.disabled = true;
+        // Event listener for the right arrow button
+        rightArrowButton.addEventListener('click', () => {
+            rightArrowButton.disabled = true;
 
-            if (currentIndex < summaryContexts.length - 1) {
-                currentIndex++;
-                showContent(currentIndex);
-
-                setTimeout(() => {
-                    rollButton.disabled = false;
-                }, 1100); // Re-enable button after a delay that covers both animations
-
-                if (currentIndex === summaryContexts.length - 1) {
-                    rollButton.classList.add('hidden');
-                    restartButton.classList.remove('hidden');
-                }
-            } else {
-                rollButton.disabled = false;
+            currentIndex++;
+            if (currentIndex >= summaryContexts.length) {
+                currentIndex = 0; // Loop back to the start
             }
+            showContent(currentIndex);
+
+            setTimeout(() => {
+                rightArrowButton.disabled = false;
+            }, 1100); // Re-enable button after a delay that covers both animations
         });
 
-        // Event listener for the "Start Over" button
-        restartButton.addEventListener('click', () => {
-            currentIndex = 0;
+        // Event listener for the left arrow button
+        leftArrowButton.addEventListener('click', () => {
+            leftArrowButton.disabled = true;
+
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = summaryContexts.length - 1; // Loop back to the end
+            }
             showContent(currentIndex);
-            restartButton.classList.add('hidden');
-            rollButton.classList.remove('hidden');
+
+            setTimeout(() => {
+                leftArrowButton.disabled = false;
+            }, 1100); // Re-enable button after a delay that covers both animations
         });
 
         // Initial load: display the first section when the DOM is fully loaded
